@@ -3,7 +3,8 @@ from tkinter import filedialog, messagebox, Button
 from PIL import Image, ImageOps
 import numpy as np
 import cv2  # Used to capture image from webcam
-from keras import load_model
+from keras.models import load_model
+import matplotlib.pyplot as plt
 
 model = load_model("models/augmented_facial_recognition.h5")
 
@@ -51,6 +52,23 @@ def import_image():
         return None
 
 
+# def run_prediction(action):
+#     """Process the selected action, capture/import the image, and make a prediction."""
+#     if action == "picture":
+#         image = take_picture()
+#     elif action == "import":
+#         image = import_image()
+#     else:
+#         messagebox.showerror("Error", "Invalid action.")
+#         return
+
+#     if image:
+#         processed_image = preprocess_image(image)
+#         prediction = model.predict(processed_image)
+#         label = ['Angry', 'Disgust' , 'Fear', 'Happy', 'Sad', 'Surprise', 'Neutral']
+#         messagebox.showinfo("Prediction Result", f"Prediction result: {prediction}")
+
+
 def run_prediction(action):
     """Process the selected action, capture/import the image, and make a prediction."""
     if action == "picture":
@@ -64,7 +82,29 @@ def run_prediction(action):
     if image:
         processed_image = preprocess_image(image)
         prediction = model.predict(processed_image)
-        messagebox.showinfo("Prediction Result", f"Prediction result: {prediction}")
+
+        # Si 'prediction' est une probabilité, on peut le convertir en valeurs plus lisibles
+        prediction_values = np.squeeze(
+            prediction
+        )  # Assurez-vous que prediction est un tableau numpy
+        label = ["Angry", "Disgust", "Fear", "Happy", "Sad", "Surprise", "Neutral"]
+
+        # Créer la figure avec 2 sous-graphes côte à côte
+        fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(12, 6))
+
+        # Afficher l'image dans le premier sous-graphe
+        ax1.imshow(image)
+        ax1.axis("off")  # Désactiver les axes
+        ax1.set_title("Input Image")
+
+        # Afficher l'histogramme dans le deuxième sous-graphe
+        ax2.bar(label, prediction_values, color="skyblue")
+        ax2.set_title("Prediction Result")
+        ax2.set_xlabel("Emotion")
+        ax2.set_ylabel("Prediction Value")
+
+        plt.tight_layout()  # Pour éviter le chevauchement des graphiques
+        plt.show()
 
 
 def main():
